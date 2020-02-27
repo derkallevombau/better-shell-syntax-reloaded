@@ -1,6 +1,6 @@
 {
-  "name": "better-syntax",
-  "displayName": "Better Syntax",
+  "name": "better-syntax-fork",
+  "displayName": "Better Syntax (fork from Jeff Hykin's Project)",
   "description": "A bundle of syntax impovements to several languages",
   "icon": "icon.png",
   "version": "1.0.0",
@@ -39,9 +39,9 @@
     "vscode": "^1.0.0"
   },
   "author": {
-    "name": "Jeff Hykin"
+    "name": "Christoph Marz"
   },
-  "publisher": "jeff-hykin",
+  "publisher": "derkallevombau",
   "contributes": {
     "grammars": [
       {
