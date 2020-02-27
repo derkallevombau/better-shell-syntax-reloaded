@@ -26,6 +26,7 @@
     "perf": "npm run report -- perf",
     "cov": "npm run report -- coverage",
     "publish": "ruby scripts/publish.rb",
+    "package": "ruby scripts/package.rb",
     "prep-embedded": "node scripts/duplicateForEmbedding.js"
   },
   "keywords": [
