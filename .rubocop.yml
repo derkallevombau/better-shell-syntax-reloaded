@@ -26,6 +26,10 @@ Layout/HashAlignment:
   EnforcedHashRocketStyle: [key, table]
   EnforcedColonStyle: [key, table]
 
+Layout/IndentationStyle:
+  EnforcedStyle: tabs
+  IndentationWidth: 1
+
 Layout/IndentationWidth:
   Width: 1 # 1 Tab. I will surely not use spaces.
 
@@ -33,9 +37,6 @@ Layout/LineLength:
   Max: 340
 
 Layout/MultilineMethodCallBraceLayout:
-  Enabled: false
-
-Layout/Tab:
   Enabled: false
 
 Metrics/AbcSize:
