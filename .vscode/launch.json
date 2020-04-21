@@ -9,6 +9,13 @@
 			// "useBundler": true
 		},
 		{
+			"name": "Debug tmtools_tests.rb",
+			"type": "Ruby",
+			"request": "launch",
+			"program": "${workspaceRoot}/tmtools_tests.rb",
+			// "useBundler": true
+		},
+		{
 			"name": "Debug Current File",
 			"type": "Ruby",
 			"request": "launch",
