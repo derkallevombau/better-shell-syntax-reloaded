@@ -527,57 +527,10 @@ class Regexp
 		# compute the endings so the operators can use/handle them
 		simple_quantifier_ending = getQuantifierFromAttributes(option_attributes)
 
-		# create a helper to handle common logic
-		groupWrap = ->(regex_as_string) do
-			# if there is a simple_quantifier_ending
-			unless simple_quantifier_ending.empty?
-				## perform optimizations
-
-				single_entity_type, existing_ending, regex_without_quantifier = Regexp.checkForSingleEntity(/#{regex_as_string}/)
-
-				unless single_entity_type.nil? # if there is a single entity
-					regex_as_string = regex_without_quantifier
-
-					# if adding an optional condition to a one-or-more, optimize it into a zero-or more
-					simple_quantifier_ending = '*' if existing_ending == '+' && simple_quantifier_ending == '?'
-				end
-
-				## Handle greedy/non-greedy endings
-
-				if option_attributes[:quantity_preference] == :as_few_as_possible # add the non-greedy quantifier
-					simple_quantifier_ending += '?'
-				elsif !option_attributes[:quantity_preference].nil? && option_attributes[:quantity_preference] != :as_many_as_possible # raise an error for an invalid option
-					error(
-						"quantity_preference '#{option_attributes[:quantity_preference]}' is an invalid value.",
-						"Valid values are: 'nil', ':as_few_as_possible', ':as_many_as_possible'."
-					)
-				end
-
-				# if the group is not a single entity
-				regex_as_string =
-					if single_entity_type.nil? # wrap the regex in a non-capture group, and then give it a quantity
-						"(?:#{regex_as_string})"
-					else # if the group is a single entity, then there is no need to wrap it
-						regex_as_string
-					end \
-				+ simple_quantifier_ending
-			end
-
-			# if backtracking isn't allowed, then wrap it in an atomic group
-			regex_as_string = "(?>#{regex_as_string})" if option_attributes[:dont_back_track?]
-
-			# if it should be wrapped in a capture group, then add the capture group
-			regex_as_string = "(#{regex_as_string})" if add_capture_group
-
-			regex_as_string
-		end
-
-		## Set quantifiers
+		## Set the quantifier
 
 		if %w[maybe oneOrMoreOf zeroOrMoreOf].include?(operator) # then don't allow manual quantification
 			error("Sorry, you can't use 'how_many_times?:', 'at_least:' or 'at_most:' with the #{operator}() function") unless simple_quantifier_ending.empty?
-
-			# set the quantifier (which will be applied inside of groupWrap[])
 
 			simple_quantifier_ending =
 				case operator
@@ -587,13 +540,49 @@ class Regexp
 				end
 		end
 
+		unless simple_quantifier_ending.empty? # if there is a simple_quantifier_ending
+			## perform optimizations
+
+			single_entity_type, existing_ending, regex_without_quantifier = Regexp.checkForSingleEntity(/#{other_regex_as_string}/)
+
+			unless single_entity_type.nil? # if there is a single entity
+				other_regex_as_string = regex_without_quantifier
+
+				# if adding an optional condition to a one-or-more, optimize it into a zero-or more
+				simple_quantifier_ending = '*' if existing_ending == '+' && simple_quantifier_ending == '?'
+			end
+
+			## Handle greedy/non-greedy endings
+
+			if option_attributes[:quantity_preference] == :as_few_as_possible # add the non-greedy quantifier
+				simple_quantifier_ending += '?'
+			elsif !option_attributes[:quantity_preference].nil? && option_attributes[:quantity_preference] != :as_many_as_possible # raise an error for an invalid option
+				error(
+					"quantity_preference '#{option_attributes[:quantity_preference]}' is an invalid value.",
+					"Valid values are: 'nil', ':as_few_as_possible', ':as_many_as_possible'."
+				)
+			end
+
+			# If the group is not a single entity, wrap the regex in a non-capture group.
+			other_regex_as_string = "(?:#{other_regex_as_string})" if single_entity_type.nil?
+
+			# Append the quantifier.
+			other_regex_as_string += simple_quantifier_ending
+		end
+
+		# if backtracking isn't allowed, then wrap it in an atomic group
+		other_regex_as_string = "(?>#{other_regex_as_string})" if option_attributes[:dont_back_track?]
+
+		# if it should be wrapped in a capture group, then add the capture group
+		other_regex_as_string = "(#{other_regex_as_string})" if add_capture_group
+
 		## Generate the core regex
 
 		new_regex =
 			if operator == 'or'
-				/(?:#{self_as_string}|#{groupWrap.call(other_regex_as_string)})/
-			else # Tt's any other operator (including the quantifiers)
-				/#{self_as_string}#{groupWrap.call(other_regex_as_string)}/
+				/(?:#{self_as_string}|#{other_regex_as_string})/
+			else # It's any other operator (including the quantifiers)
+				/#{self_as_string}#{other_regex_as_string}/
 			end
 
 		## Make changes to capture groups/attributes
