@@ -10,6 +10,7 @@ PathFor =
 		repo_helper:        File.join(__dir__, 'source',              'repo_specific_helpers.rb'                                 ),
 		multiline_string:   File.join(__dir__, 'common_helpers',      'multiline_string.rb'                                      ),
 		error_helper:       File.join(__dir__, 'common_helpers',      'error_helper.rb'                                          ),
+		logger_wrapper:     File.join(__dir__, 'common_helpers',      'logger_wrapper.rb'                                        ),
 		textmate_tools:     File.join(__dir__, 'source',              'textmate_tools.rb'                                        ),
 		pattern_generators: File.join(__dir__, 'source',              'pattern_generators.rb'                                    ),
 		svg_helper:         File.join(__dir__, 'scripts',             'helpers',                  'convert_svgs.js'              ),
