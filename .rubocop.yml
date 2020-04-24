@@ -81,6 +81,9 @@ Naming/VariableName:
 Naming/VariableNumber:
   Enabled: false
 
+Security/Eval:
+  Enabled: false
+
 Style/AsciiComments:
   Enabled: false
 
