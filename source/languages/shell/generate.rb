@@ -4,10 +4,12 @@ require(PathFor[:textmate_tools])
 require(PathFor[:sharedPattern]['numeric'])
 require(PathFor[:sharedPattern]['line_continuation'])
 require_relative('tokens.rb')
-
+require(PathFor[:logger_wrapper])
 #
 # Setup grammar
 #
+
+$logger = LoggerWrapper.new(STDOUT)
 
 Dir.chdir(__dir__)
 
@@ -133,7 +135,7 @@ end
 
 std_space               = /\s*+/
 variable_name_no_bounds = /[a-zA-Z_]\w*/
-$variable_name          = /(?:^|\b)#{variable_name_no_bounds.without_default_mode_modifiers}+(?:\b|$)/
+@variable_name          = /(?:^|\b)#{variable_name_no_bounds.without_default_mode_modifiers}+(?:\b|$)/
 
 #
 # punctuation / operators
@@ -161,10 +163,9 @@ grammar[:statement_separator] = newPattern(
 #
 
 # @param type [String]
-# @return [Hash]
 def generateAssignedVariable(type)
 	{
-		match: $variable_name,
+		match: @variable_name,
 		tag_as: "variable.other.#{type} variable.other.assignment.#{type}",
 	}
 end
@@ -179,7 +180,6 @@ assign_op = newPattern(
 )
 
 # @param paren [String]
-# @return [Hash]
 def generateArrayLiteralParen(paren)
 	{
 		match: /#{'\\' + paren}/,
@@ -188,7 +188,6 @@ def generateArrayLiteralParen(paren)
 end
 
 # @param bracket [String]
-# @return [Hash]
 def generateArraySubscriptBracket(bracket)
 	{
 		match: /#{'\\' + bracket}/,
@@ -196,7 +195,6 @@ def generateArraySubscriptBracket(bracket)
 	}
 end
 
-# @type [Hash]
 array_subscript_contents_math =
 	{
 		# Treat subscript exactly like the contents of $((...)) and ((...))
@@ -217,7 +215,9 @@ grammar[:assignment] = newPattern(
 	match: std_space.then(
 		newPattern(
 			# Assignment to array as a whole
-			newPattern(**generateAssignedVariable('array')).then(
+			newPattern(
+				**generateAssignedVariable('array')
+			).then(
 				assign_op
 			).then(
 				**generateArrayLiteralParen('(')
@@ -553,144 +553,130 @@ grammar[:variable] = [
 # regex (legacy format, imported from JavaScript regex)
 #
 
-grammar[:regexp] = {
-	'patterns' => [
-		{
-			'name' => 'keyword.control.anchor.regexp',
-			'match' => '\\\\[bB]|\\^|\\$'
-		},
-		{
-			'match' => '\\\\[1-9]\\d*|\\\\k<([a-zA-Z_$][\\w$]*)>',
-			'captures' => {
-				'0' => {
-					'name' => 'keyword.other.back-reference.regexp'
-				},
-				'1' => {
-					'name' => 'variable.other.regexp'
-				}
+grammar[:regexp] = [
+	newPattern(
+		tag_as: 'keyword.control.anchor.regexp',
+		match: /\\[bB]|\^|\$/,
+	),
+	newPattern(
+		tag_as: 'keyword.other.back-reference.regexp variable.other.regexp',
+		match: /\\[1-9]\d*|\\k<([a-zA-Z_$][\w$]*)>/,
+	),
+	newPattern(
+		tag_as: 'keyword.operator.quantifier.regexp',
+		match: /[?+*]|\{(\d+,\d+|\d+,|,\d+|\d+)\}\??/,
+	),
+	newPattern(
+		tag_as: 'keyword.operator.or.regexp',
+		match: /\\|/,
+	),
+	PatternRange.new(
+		tag_as: 'meta.group.assertion.regexp',
+		start_pattern: newPattern(
+			match: /\(/,
+			tag_as: 'punctuation.definition.group.regexp'
+		),
+		includes: [
+			newPattern(
+				tag_as: 'punctuation.definition.group.assertion.regexp',
+				match: newPattern(
+					match: /\?=/,
+					tag_as: 'meta.assertion.look-ahead.regexp'
+				).or(
+					match: /\?!/,
+					tag_as: 'meta.assertion.negative-look-ahead.regexp'
+				).or(
+					match: /\?<=/,
+					tag_as: 'meta.assertion.look-behind.regexp'
+				).or(
+					match: /\?<!/,
+					tag_as: 'meta.assertion.negative-look-behind.regexp'
+				)
+			),
+			:regexp
+		],
+		end_pattern: newPattern(
+			match: /\)/,
+			tag_as: 'punctuation.definition.group.regexp'
+		),
+	),
+	{
+		'name' => 'meta.group.regexp',
+		'begin' => '\\((?:(\\?:)|(?:\\?<([a-zA-Z_$][\\w$]*)>))?',
+		'beginCaptures' => {
+			'0' => {
+				'name' => 'punctuation.definition.group.regexp'
+			},
+			'1' => {
+				'name' => 'punctuation.definition.group.no-capture.regexp'
+			},
+			'2' => {
+				'name' => 'variable.other.regexp'
 			}
 		},
-		{
-			'name' => 'keyword.operator.quantifier.regexp',
-			'match' => '[?+*]|\\{(\\d+,\\d+|\\d+,|,\\d+|\\d+)\\}\\??'
+		'end' => '\\)',
+		'endCaptures' => {
+			'0' => {
+				'name' => 'punctuation.definition.group.regexp'
+			}
 		},
-		{
-			'name' => 'keyword.operator.or.regexp',
-			'match' => '\\|'
+		'patterns' => [
+			{
+				'include' => '#regexp'
+			}
+		]
+	},
+	{
+		'name' => 'constant.other.character-class.set.regexp',
+		'begin' => '(\\[)(\\^)?',
+		'beginCaptures' => {
+			'1' => {
+				'name' => 'punctuation.definition.character-class.regexp'
+			},
+			'2' => {
+				'name' => 'keyword.operator.negation.regexp'
+			}
 		},
-		{
-			'name' => 'meta.group.assertion.regexp',
-			'begin' => '(\\()((\\?=)|(\\?!)|(\\?<=)|(\\?<!))',
-			'beginCaptures' => {
-				'1' => {
-					'name' => 'punctuation.definition.group.regexp'
-				},
-				'2' => {
-					'name' => 'punctuation.definition.group.assertion.regexp'
-				},
-				'3' => {
-					'name' => 'meta.assertion.look-ahead.regexp'
-				},
-				'4' => {
-					'name' => 'meta.assertion.negative-look-ahead.regexp'
-				},
-				'5' => {
-					'name' => 'meta.assertion.look-behind.regexp'
-				},
-				'6' => {
-					'name' => 'meta.assertion.negative-look-behind.regexp'
-				}
-			},
-			'end' => '(\\))',
-			'endCaptures' => {
-				'1' => {
-					'name' => 'punctuation.definition.group.regexp'
-				}
-			},
-			'patterns' => [
-				{
-					'include' => '#regexp'
-				}
-			]
+		'end' => '(\\])',
+		'endCaptures' => {
+			'1' => {
+				'name' => 'punctuation.definition.character-class.regexp'
+			}
 		},
-		{
-			'name' => 'meta.group.regexp',
-			'begin' => '\\((?:(\\?:)|(?:\\?<([a-zA-Z_$][\\w$]*)>))?',
-			'beginCaptures' => {
-				'0' => {
-					'name' => 'punctuation.definition.group.regexp'
-				},
-				'1' => {
-					'name' => 'punctuation.definition.group.no-capture.regexp'
-				},
-				'2' => {
-					'name' => 'variable.other.regexp'
-				}
-			},
-			'end' => '\\)',
-			'endCaptures' => {
-				'0' => {
-					'name' => 'punctuation.definition.group.regexp'
-				}
-			},
-			'patterns' => [
-				{
-					'include' => '#regexp'
-				}
-			]
-		},
-		{
-			'name' => 'constant.other.character-class.set.regexp',
-			'begin' => '(\\[)(\\^)?',
-			'beginCaptures' => {
-				'1' => {
-					'name' => 'punctuation.definition.character-class.regexp'
-				},
-				'2' => {
-					'name' => 'keyword.operator.negation.regexp'
-				}
-			},
-			'end' => '(\\])',
-			'endCaptures' => {
-				'1' => {
-					'name' => 'punctuation.definition.character-class.regexp'
-				}
-			},
-			'patterns' => [
-				{
-					'name' => 'constant.other.character-class.range.regexp',
-					'match' => '(?:.|(\\\\(?:[0-7]{3}|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}))|(\\\\c[A-Z])|(\\\\.))\\-(?:[^\\]\\\\]|(\\\\(?:[0-7]{3}|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}))|(\\\\c[A-Z])|(\\\\.))',
-					'captures' => {
-						'1' => {
-							'name' => 'constant.character.numeric.regexp'
-						},
-						'2' => {
-							'name' => 'constant.character.control.regexp'
-						},
-						'3' => {
-							'name' => 'constant.character.escape.backslash.regexp'
-						},
-						'4' => {
-							'name' => 'constant.character.numeric.regexp'
-						},
-						'5' => {
-							'name' => 'constant.character.control.regexp'
-						},
-						'6' => {
-							'name' => 'constant.character.escape.backslash.regexp'
-						}
+		'patterns' => [
+			{
+				'name' => 'constant.other.character-class.range.regexp',
+				'match' => '(?:.|(\\\\(?:[0-7]{3}|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}))|(\\\\c[A-Z])|(\\\\.))\\-(?:[^\\]\\\\]|(\\\\(?:[0-7]{3}|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}))|(\\\\c[A-Z])|(\\\\.))',
+				'captures' => {
+					'1' => {
+						'name' => 'constant.character.numeric.regexp'
+					},
+					'2' => {
+						'name' => 'constant.character.control.regexp'
+					},
+					'3' => {
+						'name' => 'constant.character.escape.backslash.regexp'
+					},
+					'4' => {
+						'name' => 'constant.character.numeric.regexp'
+					},
+					'5' => {
+						'name' => 'constant.character.control.regexp'
+					},
+					'6' => {
+						'name' => 'constant.character.escape.backslash.regexp'
 					}
-				},
-				{
-					'include' => '#regex-character-class'
 				}
-			]
-		},
-		{
-			'include' => '#regex-character-class'
-		}
-	]
-}
+			},
+			{
+				'include' => '#regex-character-class'
+			}
+		]
+	},
+	{
+		'include' => '#regex-character-class'
+	}
+]
 
 grammar[:regex_character_class] = {
 	'patterns' => [
