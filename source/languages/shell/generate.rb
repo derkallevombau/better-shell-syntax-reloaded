@@ -133,7 +133,7 @@ for key, value in original_grammar['repository']
 	end
 end
 
-std_space               = /\s*+/
+whitespace_maybe        = /\s*+/ # N.B.: \s also matches \t. '+' after a quantifier denotes possessive matching.
 variable_name_no_bounds = /[a-zA-Z_]\w*/
 @variable_name          = /(?:^|\b)#{variable_name_no_bounds.without_default_mode_modifiers}+(?:\b|$)/
 
@@ -212,7 +212,7 @@ assignment_end = ';|&&|\|\||&'
 
 grammar[:assignment] = newPattern(
 	tag_as: 'meta.expression.assignment',
-	match: std_space.then(
+	match: whitespace_maybe.then(
 		newPattern(
 			# Assignment to array as a whole
 			newPattern(
@@ -272,7 +272,7 @@ valid_literal_characters        = Regexp.new("[^\s#{invalid_literals}]+")
 
 grammar[:command_name] = PatternRange.new(
 	tag_as: 'entity.name.command',
-	start_pattern: std_space.then(possible_command_start),
+	start_pattern: whitespace_maybe.then(possible_command_start),
 	end_pattern: lookAheadFor(@space).or(command_end),
 	includes: [
 		:custom_commands,
@@ -333,7 +333,7 @@ keyword_patterns = /#{keywords.map { |keyword| keyword + '\W|' + keyword + '\$' 
 grammar[:command_call] = PatternRange.new(
 	zeroLengthStart?: true,
 	tag_as: 'meta.statement',
-	start_pattern: lookBehindFor(possible_pre_command_characters).then(std_space).lookAheadToAvoid(keyword_patterns),
+	start_pattern: lookBehindFor(possible_pre_command_characters).then(whitespace_maybe).lookAheadToAvoid(keyword_patterns),
 	end_pattern: command_end,
 	includes: [
 		:option,
