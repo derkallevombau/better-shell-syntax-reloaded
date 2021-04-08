@@ -134,6 +134,7 @@ for key, value in original_grammar['repository']
 end
 
 whitespace_maybe        = /\s*+/ # N.B.: \s also matches \t. '+' after a quantifier denotes possessive matching.
+whitespace              = /\s++/
 variable_name_no_bounds = /[a-zA-Z_]\w*/
 @variable_name          = /(?:^|\b)#{variable_name_no_bounds.without_default_mode_modifiers}+(?:\b|$)/
 
