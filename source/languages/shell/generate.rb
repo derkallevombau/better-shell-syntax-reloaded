@@ -283,7 +283,7 @@ grammar[:command_name] = PatternRange.new(
 
 grammar[:argument] = PatternRange.new(
 	tag_as: 'meta.argument',
-	start_pattern: /\s++/.then(possible_command_start),
+	start_pattern: whitespace.then(possible_command_start),
 	end_pattern: unquoted_string_end,
 	includes: [
 		:command_context,
@@ -304,7 +304,7 @@ grammar[:argument] = PatternRange.new(
 grammar[:option] = PatternRange.new(
 	tag_content_as: 'string.unquoted.argument constant.other.option',
 	start_pattern: newPattern(
-		/\s++/.then(
+		whitespace.then(
 			match: /-/,
 			tag_as: 'string.unquoted.argument constant.other.option.dash'
 		).then(
@@ -319,7 +319,7 @@ grammar[:option] = PatternRange.new(
 )
 
 grammar[:simple_options] = zeroOrMoreOf(
-	/\s++/.then(
+	whitespace.then(
 		match: /\-/,
 		tag_as: 'string.unquoted.argument constant.other.option.dash'
 	).then(
