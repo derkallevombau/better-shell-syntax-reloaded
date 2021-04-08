@@ -263,7 +263,7 @@ grammar[:assignment] = newPattern(
 # Commands
 #
 
-possible_pre_command_characters = /(?:^|;|\||&|!|\(|\{|\`|if|elsif|then|while|until|do)/
+possible_pre_command_characters = /(?:^|;|\||&|!|\(|\{|\`|if|elif|then|while|until|do)/
 possible_command_start          = lookAheadToAvoid(/(?:!|%|&|\||\(|\{|\[|<|>|#|\n|$|;)/)
 command_end                     = lookAheadFor(/;|\||&|$|\n|\)|\`|\}|\{|#|\]/).lookBehindToAvoid(/\\/)
 unquoted_string_end             = lookAheadFor(/\s|;|\||&|$|\n|\)|\`/)
