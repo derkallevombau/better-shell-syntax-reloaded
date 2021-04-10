@@ -153,6 +153,12 @@ Style/RegexpLiteral:
 Style/SingleLineMethods:
   Enabled: false
 
+# Little by little, RuboCop gets on my nerves. Always prefer string interpolation over concatenation. How stupid!
+# It's not surprising that I have never seen this from linters for other languages, since it depends on the situation
+# if interpolation or concatenation is the better choice.
+Style/StringConcatenation:
+  Enabled: false
+
 Style/SymbolArray:
   EnforcedStyle: brackets
 
