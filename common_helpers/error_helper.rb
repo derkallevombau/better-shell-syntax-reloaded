@@ -1,6 +1,7 @@
-require_relative('./multiline_string.rb')
+require_relative('./multiline_string')
 
-# Raises an exception with a message and prints the location where the error occurred.<br><br>
+# Raises an exception with a message and prints the location where the error occurred.
+#
 # This method takes a list of strings (and other objects) to compose the message
 # and inserts newlines between the provided strings.
 # @param args [Array] List of strings to be concatenated.\
@@ -13,10 +14,11 @@ def error(*args)
 	# another one to get an empty line before the message.
 	# Append a newline to the message to get an empty line
 	# between the last line of the message and the error location.
-	raise(Exception.new(), String.multiline({ autoNewline: true, precedingNewlines: 2 }, *args) + "\n", caller)
+	raise(Exception.new(), StringGenerator.generate(*args, autoNewline: true, precedingNewlines: 2) + "\n", caller)
 end
 
-# Prints a warning message.<br><br>
+# Prints a warning message.
+#
 # This method takes a list of strings (and other objects) to compose the message
 # and inserts newlines between the provided strings.
 # @param args [Array] List of strings to be concatenated.\
@@ -26,5 +28,5 @@ end
 #     An argument of `nil` will begin a new paragraph.
 def warning(*args)
 	# Two preceding newlines to get two empty lines after previous output, if any.
-	puts(String.multiline({ autoNewline: true, precedingNewlines: 2 }, 'Warning:', nil, *args))
+	puts(StringGenerator.generate('Warning:', nil, *args, autoNewline: true, precedingNewlines: 2))
 end
