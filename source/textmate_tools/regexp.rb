@@ -554,10 +554,12 @@ class Regexp
 				end
 		end
 
+		single_entity_type, existing_ending, regex_without_quantifier = Regexp.checkForSingleEntity(/#{other_regex_as_string}/)
+
+		wrapped = false
+
 		unless simple_quantifier_ending.empty? # if there is a simple_quantifier_ending
 			## perform optimizations
-
-			single_entity_type, existing_ending, regex_without_quantifier = Regexp.checkForSingleEntity(/#{other_regex_as_string}/)
 
 			unless single_entity_type.nil? # if there is a single entity
 				other_regex_as_string = regex_without_quantifier
@@ -578,23 +580,38 @@ class Regexp
 			end
 
 			# If the group is not a single entity, wrap the regex in a non-capture group.
-			other_regex_as_string = "(?:#{other_regex_as_string})" if single_entity_type.nil?
+			if single_entity_type.nil?
+				other_regex_as_string = "(?:#{other_regex_as_string})"
+
+				wrapped = true
+			end
 
 			# Append the quantifier.
 			other_regex_as_string += simple_quantifier_ending
 		end
 
 		# if backtracking isn't allowed, then wrap it in an atomic group
-		other_regex_as_string = "(?>#{other_regex_as_string})" if option_attributes[:dont_back_track?]
+		if option_attributes[:dont_back_track?]
+			other_regex_as_string = "(?>#{other_regex_as_string})"
+
+			wrapped = true
+		end
 
 		# if it should be wrapped in a capture group, then add the capture group
-		other_regex_as_string = "(#{other_regex_as_string})" if add_capture_group
+		if add_capture_group
+			other_regex_as_string = "(#{other_regex_as_string})"
+
+			wrapped = true
+		end
+
+		# If it will be or'ed, is not a single entity and has not been wrapped so far, wrap it in a non-capture group.
+		other_regex_as_string = "(?:#{other_regex_as_string})" if operator == 'or' && single_entity_type.nil? && !wrapped
 
 		## Generate the core regex
 
 		new_regex =
 			if operator == 'or'
-				/(?:#{self_as_string}|#{other_regex_as_string})/
+				/#{self_as_string}|#{other_regex_as_string}/
 			else # It's any other operator (including the quantifiers)
 				/#{self_as_string}#{other_regex_as_string}/
 			end
