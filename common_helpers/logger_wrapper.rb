@@ -3,6 +3,9 @@
 
 require('logger')
 
+require_relative('../directory')
+require(PathFor[:multiline_string])
+
 # Creates a stdlib `Logger` with the provided arguments.
 #
 # Implements the standard logging methods which all take just a block
@@ -42,15 +45,39 @@ class LoggerWrapper
 	end
 
 	def finalize(_object_id)
-		@logger.debug { 'Closing global logger.' }
+		@logger.debug { 'Closing logger.' }
 
 		@logger.close
 	end
 
-	def debug(&block)   @logger.debug(caller[0],   &block) end
-	def info(&block)    @logger.info(caller[0],    &block) end
-	def warn(&block)    @logger.warn(caller[0],    &block) end
-	def error(&block)   @logger.error(caller[0],   &block) end
-	def fatal(&block)   @logger.fatal(caller[0],   &block) end
-	def unknown(&block) @logger.unknown(caller[0], &block) end
+	def debug(&block)   @logger.debug(caller[0],   &processBlock(caller[0], &block)) end
+	def info(&block)    @logger.info(caller[0],    &processBlock(caller[0], &block)) end
+	def warn(&block)    @logger.warn(caller[0],    &processBlock(caller[0], &block)) end
+	def error(&block)   @logger.error(caller[0],   &processBlock(caller[0], &block)) end
+	def fatal(&block)   @logger.fatal(caller[0],   &processBlock(caller[0], &block)) end
+	def unknown(&block) @logger.unknown(caller[0], &processBlock(caller[0], &block)) end
+
+	private
+
+	def processBlock(logStatementLocation, &block)
+		proc do
+			arg = block.call
+
+			case arg
+				when String
+					arg # Return a string as is.
+				when Array
+					## Forward array contents to `StringGenerator.generate` an return the result.
+
+					# Unshift an empty string to get a line break after the
+					# standard part of the log entry if we have no leading message.
+					bindIdx = arg.find_index { |e| e.is_a?(Binding) }
+					arg.unshift('') if bindIdx.zero?
+
+					StringGenerator.generate(*arg, autoNewline: true, precedingNewlines: 0, prettyGenerateHashes: true, prettyGenerateArrays: true, exprEvalPrefix: '- ')
+				else
+					"#{logStatementLocation}: Invalid object '#{arg}' of type #{arg.class} given in block."
+			end
+		end
+	end
 end
