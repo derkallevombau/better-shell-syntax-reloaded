@@ -1,10 +1,45 @@
 {
-  "name": "better-syntax-fork",
-  "displayName": "Better Syntax (fork from Jeff Hykin's Project)",
+  "name": "better-shell-syntax-reloaded",
+  "version": "1.0.0",
+  "displayName": "Better Syntax Shell Syntax Reloaded (fork from https://github.com/jeff-hykin/better-shell-syntax.git)",
   "description": "A bundle of syntax impovements to several languages",
   "icon": "icon.png",
-  "version": "1.0.0",
-  "scripts": {
+  "keywords": [
+    "syntax",
+    "textmate",
+    "highlighting",
+    "coloring",
+    "color",
+	"grammar"
+  ],
+  "categories": [
+    "Programming Languages"
+  ],
+  "author": {
+    "name": "Jeff Hykin"
+  },
+  "contributors": [
+    "derkallevombau"
+  ],
+  "maintainers": [
+    "derkallevombau"
+  ],
+  "publisher": "derkallevombau",
+  "license": "MIT",
+  "repository": {
+	"url": "https://github.com/derkallevombau/better-shell-syntax-reloaded",
+	"type": "git"
+  },
+  "contributes": {
+    "grammars": [
+      {
+        "language": "shellscript",
+        "scopeName": "source.shell",
+        "path": "syntaxes/shell.tmLanguage.json"
+      }
+    ]
+  },
+"scripts": {
     "build": "ruby scripts/generate.rb",
     "postbuild": "npm run prep-embedded",
     "perfall": "ruby scripts/perf_all.rb",
@@ -29,80 +64,8 @@
     "package": "ruby scripts/package.rb",
     "prep-embedded": "node scripts/duplicateForEmbedding.js"
   },
-  "keywords": [
-    "syntax",
-    "textmate",
-    "highlighting",
-    "coloring",
-    "color"
-  ],
   "engines": {
-    "vscode": "^1.0.0"
-  },
-  "author": {
-    "name": "Christoph Marz"
-  },
-  "publisher": "derkallevombau",
-  "contributes": {
-    "grammars": [
-      {
-        "language": "cpp",
-        "scopeName": "source.cpp.embedded.macro",
-        "path": "./syntaxes/cpp.embedded.macro.tmLanguage.json",
-        "embeddedLanguages": {
-          "meta.embedded.assembly.cpp": "asm"
-        }
-      },
-      {
-        "language": "cpp",
-        "scopeName": "source.cpp",
-        "path": "./syntaxes/cpp.tmLanguage.json",
-        "embeddedLanguages": {
-          "meta.embedded.assembly.cpp": "asm",
-          "meta.preprocessor.macro.contents": "cpp"
-        }
-      },
-      {
-        "language": "c",
-        "scopeName": "source.c",
-        "path": "./syntaxes/c.tmLanguage.json",
-        "embeddedLanguages": {
-          "meta.embedded.assembly.c": "asm"
-        }
-      },
-      {
-        "language": "objective-cpp",
-        "scopeName": "source.objcpp",
-        "path": "./syntaxes/objcpp.tmLanguage.json"
-      },
-      {
-        "language": "objective-c",
-        "scopeName": "source.objc",
-        "path": "./syntaxes/objc.tmLanguage.json"
-      },
-      {
-        "language": "shellscript",
-        "scopeName": "source.shell",
-        "path": "syntaxes/shell.tmLanguage.json"
-      },
-      {
-        "language": "perl",
-        "scopeName": "source.perl",
-        "path": "syntaxes/perl.tmLanguage.json"
-      },
-      {
-        "language": "dockerfile",
-        "scopeName": "source.dockerfile",
-        "path": "syntaxes/dockerfile.tmLanguage.json"
-      }
-    ]
-  },
-  "categories": [
-    "Programming Languages"
-  ],
-  "repository": {
-    "url": "https://github.com/jeff-hykin/cpp-textmate-grammer",
-    "type": "git"
+    "vscode": "^1.55.0"
   },
   "devDependencies": {
     "chalk": "^2.4.2",
