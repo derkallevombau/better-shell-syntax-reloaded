@@ -74,7 +74,7 @@ class LoggerWrapper
 					bindIdx = arg.find_index { |e| e.is_a?(Binding) }
 					arg.unshift('') if bindIdx.zero?
 
-					StringGenerator.generate(*arg, autoNewline: true, precedingNewlines: 0, prettyGenerateHashes: true, prettyGenerateArrays: true, exprEvalPrefix: '- ')
+					StringGenerator.generate(*arg, autoNewline: true, precedingNewlines: 0, prettyGenerateHashes: true, prettyGenerateArrays: true, evalExprPrefix: '- ')
 				else
 					"#{logStatementLocation}: Invalid object '#{arg}' of type #{arg.class} given in block."
 			end
