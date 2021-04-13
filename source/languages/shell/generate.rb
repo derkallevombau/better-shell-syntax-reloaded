@@ -9,7 +9,7 @@ require(PathFor[:logger_wrapper])
 # Setup grammar
 #
 
-$logger = LoggerWrapper.new(STDOUT)
+# $logger = LoggerWrapper.new(STDOUT)
 
 Dir.chdir(__dir__)
 

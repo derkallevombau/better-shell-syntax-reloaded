@@ -499,31 +499,31 @@ class Regexp
 	# @param operator [String]
 	# @return [Regexp]
 	def processRegexOperator(arguments, operator)
-		$logger.debug { ['Called with:', binding, :arguments, :operator] }
+		# $logger.debug { ['Called with:', binding, :arguments, :operator] }
 
 		# first parse the arguments
 		other_regex, pattern_attributes = Regexp.processGrammarArguments(arguments, operator)
 
 		other_regex ||= //
 
-		$logger.debug { [binding, :other_regex, :pattern_attributes] }
+		# $logger.debug { [binding, :other_regex, :pattern_attributes] }
 
 		# pattern_attributes does not clone well, option_attributes must be the clone
 		option_attributes = pattern_attributes.clone
 		pattern_attributes.keep_if { |key| @@textmate_attributes.key?(key) }
 		option_attributes.delete_if { |key| @@textmate_attributes.key?(key) }
 
-		$logger.debug { [binding, :option_attributes, :pattern_attributes] }
+		# $logger.debug { [binding, :option_attributes, :pattern_attributes] }
 
 		no_attributes     = pattern_attributes.empty?
 		add_capture_group = !no_attributes
 
-		$logger.debug { [binding, :add_capture_group] }
+		# $logger.debug { [binding, :add_capture_group] }
 
 		self_as_string        = without_default_mode_modifiers
 		other_regex_as_string = other_regex.without_default_mode_modifiers
 
-		$logger.debug { [binding, :self_as_string, :other_regex_as_string] }
+		# $logger.debug { [binding, :self_as_string, :other_regex_as_string] }
 
 		# handle :word_cannot_be_any_of
 		if pattern_attributes[:word_cannot_be_any_of]
@@ -534,12 +534,12 @@ class Regexp
 			pattern_attributes.delete(:word_cannot_be_any_of)
 		end
 
-		$logger.debug { [binding, :other_regex_as_string, :pattern_attributes] }
+		# $logger.debug { [binding, :other_regex_as_string, :pattern_attributes] }
 
 		# compute the endings so the operators can use/handle them
 		simple_quantifier_ending = getQuantifierFromAttributes(option_attributes)
 
-		$logger.debug { [binding, :simple_quantifier_ending] }
+		# $logger.debug { [binding, :simple_quantifier_ending] }
 
 		## Set the quantifier
 
