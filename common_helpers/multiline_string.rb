@@ -8,11 +8,11 @@ require_relative('string_generator/ansi_colors')
 # automatically as C++ does and concatenation operators before/after line breaks
 # work only with line continuation, i. e. placing a backslash at EOL.
 #
-# This module implements the class method `generate` which does not only allow to
+# This class implements the class method `generate` which does not only allow to
 # generate multiline strings in a neatly manner, but also other nifty things like
 # automatic line breaks, coloring and evaluation of arbitrary expressions.
-module StringGenerator
-	include AnsiColors
+class StringGenerator
+	include(AnsiColors) # Makes AnsiColor an instance member.
 
 	AnsiSpecifier = AnsiColor.keys.join('|')
 
@@ -131,20 +131,20 @@ module StringGenerator
 	# @param evalExprColor [Symbol] Color specifier for default color of evaluated expression.
 	# @param evalExprValueColor [Symbol] Color specifier for default color of value of evaluated expression.
 	# @return [String]
-	def self.generate(*args, autoNewline: false, precedingNewlines: 0, prettyGenerateHashes: false, prettyGenerateArrays: false, evalExprPrefix: '- ', evalExprColor: nil, evalExprValueColor: nil)
-		evalExprAnsiCodes      = evalExprColor.nil? ? nil : StringGenerator.processSymbol(evalExprColor)
-		evalExprValueAnsiCodes = evalExprValueColor.nil? ? nil : StringGenerator.processSymbol(evalExprValueColor)
+	def self.generate(*args, autoNewline: false, precedingNewlines: 0, prettyGenerateHashes: false, prettyGenerateArrays: false, evalExprPrefix: '- ', evalExprColor: nil, evalExprValueColor: nil) # 'self.' is used to define class methods.
+		evalExprAnsiCodes      = evalExprColor.nil? ? nil : processSymbol(evalExprColor) # N.B.: No 'StringGenerator.' before private class method invocations.
+		evalExprValueAnsiCodes = evalExprValueColor.nil? ? nil : processSymbol(evalExprValueColor)
+
+		## Class variables
 
 		# @type [Hash]
-		ansiCodes = nil
-		bind = nil
-
-
+		@@ansiCodes = nil
+		@@bind = nil
 
 		# Extract binding from args, if any, for expression evaluation.
 		args.delete_if do |arg|
 			if arg.is_a?(Binding)
-				bind = arg
+				@@bind = arg
 
 				true
 			else
@@ -159,23 +159,23 @@ module StringGenerator
 				case arg
 					when nil    then autoNewline ? '' : "\n" # We can check for a certain value...
 					when String then arg                     # ... as well as for a type. Nice feature!
-					when Hash   then StringGenerator.hashOrArrayToString(arg, prettyGenerateHashes)
-					when Array  then StringGenerator.hashOrArrayToString(arg, prettyGenerateArrays)
+					when Hash   then hashOrArrayToString(arg, prettyGenerateHashes)
+					when Array  then hashOrArrayToString(arg, prettyGenerateArrays)
 					when Symbol
-						result = StringGenerator.processSymbol(arg, prettyGenerateHashes, prettyGenerateArrays, evalExprPrefix, evalExprAnsiCodes, evalExprValueAnsiCodes)
+						result = processSymbol(arg, prettyGenerateHashes, prettyGenerateArrays, evalExprPrefix, evalExprAnsiCodes, evalExprValueAnsiCodes)
 
-						ansiCodes = result if result.is_a?(Hash)
+						@@ansiCodes = result if result.is_a?(Hash)
 
 						result
 					else arg.inspect
 				end
 
-			if ansiCodes&.key?(:normal) && string != ansiCodes[:normal] # Last arg was a normal color specifier.
-				ansiCodes = nil
+			if @@ansiCodes&.key?(:normal) && string != @@ansiCodes[:normal] # Last arg was a normal color specifier.
+				@@ansiCodes = nil
 
 				# Prepend color/formatting codes to string
 				# and append code to reset all attributes.
-				ansiCodes[:normal] + string + AnsiColor['norm']
+				@@ansiCodes[:normal] + string + AnsiColor['norm']
 			else
 				string
 			end
@@ -184,64 +184,64 @@ module StringGenerator
 		args.join(autoNewline ? "\n" : '').prepend("\n" * precedingNewlines)
 	end
 
-	class << self # Singleton class
-		# Private class methods (no 'self.' needed).
+	## Private class methods
 
-		# Processes a `Symbol` that is either a color specifier or an expression to be evaluated.
-		# @param symbol [Symbol]
-		# @param prettyGenerateHashes [Boolean]
-		# @param prettyGenerateArrays [Boolean]
-		# @param evalExprPrefix [String]
-		# @param evalExprAnsiCodes [String] Color of evaluated expression.
-		# @param evalExprValueAnsiCodes [String] Color of value of evaluated expression.
-		# @return [Hash, String] A `Hash` that maps the entities to be colored to the
-		#     respective ANSI codes if `symbol` is a color specifier,\
-		#     or a string containing the expression and its value if `symbol`
-		#     is an expression to be evaluated.
-		def processSymbol(symbol, prettyGenerateHashes, prettyGenerateArrays, evalExprPrefix, evalExprAnsiCodes, evalExprValueAnsiCodes)
-			## First, check if symbol is a color specifier.
-			ansiSpecStr = symbol.to_s
+	# Processes a `Symbol` that is either a color specifier or an expression to be evaluated.
+	# @param symbol [Symbol]
+	# @param prettyGenerateHashes [Boolean]
+	# @param prettyGenerateArrays [Boolean]
+	# @param evalExprPrefix [String]
+	# @param evalExprAnsiCodes [String] Color of evaluated expression.
+	# @param evalExprValueAnsiCodes [String] Color of value of evaluated expression.
+	# @return [Hash, String] A `Hash` that maps the entities to be colored to the
+	#     respective ANSI codes if `symbol` is a color specifier,\
+	#     or a string containing the expression and its value if `symbol`
+	#     is an expression to be evaluated.
+	def self.processSymbol(symbol, prettyGenerateHashes, prettyGenerateArrays, evalExprPrefix, evalExprAnsiCodes, evalExprValueAnsiCodes)
+		## First, check if symbol is a color specifier.
+		ansiSpecStr = symbol.to_s
 
-			# As long as there is a specifier, replace it with the respective code.
-			# Nice: This is short for 'ansiSpecStr.sub!(/#{AnsiSpecifier}/) { |m| AnsiColor[m] }'
-			while ansiSpecStr.sub!(/#{AnsiSpecifier}/, AnsiColor)
+		# As long as there is a specifier, replace it with the respective code.
+		# Nice: This is short for 'ansiSpecStr.sub!(/#{AnsiSpecifier}/) { |m| AnsiColor[m] }'
+		while ansiSpecStr.sub!(/#{AnsiSpecifier}/, AnsiColor)
+		end
+
+		if ansiSpecStr != symbol.to_s # It is a color specifier.
+			# Determine type of color specifier and return a hash as appropriate
+			# with remaining underscores removed, if any.
+
+			if    (@@ansiCodes = ansiSpecStr.match(/(.+)__$/)    { { expr: $1 } })                # It is a color specifier for evaluated expression.
+			elsif (@@ansiCodes = ansiSpecStr.match(/^__(.+)/)    { { exprValue: $1 } })           # It is a color specifier for value of evaluated expression.
+			elsif (@@ansiCodes = ansiSpecStr.match(/(.+)__(.+)/) { { expr: $1, exprValue: $2 } }) # It is a color specifier for both.
+			else  (@@ansiCodes =                                   { normal: ansiSpecStr })       # It is a color specifier for a normal string.
 			end
 
-			if ansiSpecStr != symbol.to_s # It is a color specifier.
-				# Determine type of color specifier and return a hash as appropriate
-				# with remaining underscores removed, if any.
+			@@ansiCodes.gsub(/_/, '')
+		else
+			## If it isn't a color specifier, it is an expression to be evaluated.
 
-				if    (ansiCodes = ansiSpecStr.match(/(.+)__$/)    { { expr: $1 } })                # It is a color specifier for evaluated expression.
-				elsif (ansiCodes = ansiSpecStr.match(/^__(.+)/)    { { exprValue: $1 } })           # It is a color specifier for value of evaluated expression.
-				elsif (ansiCodes = ansiSpecStr.match(/(.+)__(.+)/) { { expr: $1, exprValue: $2 } }) # It is a color specifier for both.
-				else  (ansiCodes =                                   { normal: ansiSpecStr })       # It is a color specifier for a normal string.
+			# Return a string containing the expression and its value.
+
+			exprValue = eval(symbol.to_s, @@bind)
+
+			exprValue =
+				case exprValue
+					when Hash
+						hashOrArrayToString(exprValue, prettyGenerateHashes)
+					when Array
+						hashOrArrayToString(exprValue, prettyGenerateArrays)
+					else
+						exprValue
 				end
 
-				ansiCodes.gsub(/_/, '')
-			else
-				## If it isn't a color specifier, it is an expression to be evaluated.
-
-				# Return a string containing the expression and its value.
-
-				exprValue = eval(symbol.to_s, bind)
-
-				exprValue =
-					case exprValue
-						when Hash
-							StringGenerator.hashOrArrayToString(exprValue, prettyGenerateHashes)
-						when Array
-							StringGenerator.hashOrArrayToString(exprValue, prettyGenerateArrays)
-						else
-							exprValue
-					end
-
-				evalExprPrefix + evalExprAnsiCodes + symbol.to_s + AnsiColor['norm'] + ': ' + evalExprValueAnsiCodes + exprValue + AnsiColor['norm']
-			end
-		end
-
-		# @return [String]
-		def hashOrArrayToString(hashOrArray, prettyGenerate)
-			prettyGenerate ? JSON.pretty_generate(hashOrArray) : hashOrArray.inspect
+			evalExprPrefix + evalExprAnsiCodes + symbol.to_s + AnsiColor['norm'] + ': ' + evalExprValueAnsiCodes + exprValue + AnsiColor['norm']
 		end
 	end
+
+	# @return [String]
+	def self.hashOrArrayToString(hashOrArray, prettyGenerate)
+		prettyGenerate ? JSON.pretty_generate(hashOrArray) : hashOrArray.inspect
+	end
+
+	private_class_method(:processSymbol, :hashOrArrayToString)
 end
