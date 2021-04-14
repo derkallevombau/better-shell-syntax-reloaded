@@ -846,7 +846,7 @@ repository:
       '4':
         name: punctuation.separator.statement.background.shell
   assignment:
-    match: "\\s*+(?:((?:^|\\b)[a-zA-Z_]\\w*+(?:\\b|$))(?:(\\+\\=)|(\\=))(\\()(.*(?=\\)))(\\))|(?:((?:^|\\b)[a-zA-Z_]\\w*+(?:\\b|$))(\\[)([^\\]]+)(\\])|((?:^|\\b)[a-zA-Z_]\\w*+(?:\\b|$)))(?:(\\+\\=)|(\\=))(.*(?=\\s+(?:;|&&|\\|\\||&))|.*(?=;|&&|\\|\\||&)|.*))"
+    match: "\\s*+(?:(?:((?:^|\\b)[a-zA-Z_]\\w*+(?:\\b|$))(?:(\\+=)|(=))(\\()(.*(?=\\)))(\\))|((?:^|\\b)[a-zA-Z_]\\w*+(?:\\b|$))(\\[)([^\\]]+)(\\])(?:(\\+=)|(=))(.*?(?=\\s*(?:;|&|\\||$))))|((?:^|\\b)[a-zA-Z_]\\w*+(?:\\b|$))(?:(\\+=)|(=))(.*?(?=\\s*(?:;|&|\\||$))))"
     captures:
       '1':
         name: variable.other.array.shell variable.other.assignment.array.shell
@@ -873,12 +873,20 @@ repository:
       '10':
         name: punctuation.section.array.shell
       '11':
-        name: variable.other.normal.shell variable.other.assignment.normal.shell
-      '12':
         name: keyword.operator.assignment.compound.shell
-      '13':
+      '12':
         name: keyword.operator.assignment.shell
+      '13':
+        name: variable.other.assignment.rvalue.shell
+        patterns:
+        - include: "#rvalue"
       '14':
+        name: variable.other.normal.shell variable.other.assignment.normal.shell
+      '15':
+        name: keyword.operator.assignment.compound.shell
+      '16':
+        name: keyword.operator.assignment.shell
+      '17':
         name: variable.other.assignment.rvalue.shell
         patterns:
         - include: "#rvalue"
@@ -886,14 +894,14 @@ repository:
   command_name:
     name: entity.name.command.shell
     begin: "\\s*+(?!(?:!|%|&|\\||\\(|\\{|\\[|<|>|#|\\n|$|;))"
-    end: "(?:(?=\\s)|(?=;|\\||&|$|\\n|\\)|\\`|\\}|\\{|#|\\])(?<!\\\\))"
+    end: "(?:(?=\\s)|(?=;|\\||&|$|\\n|\\)|`|\\}|\\{|#|\\])(?<!\\\\))"
     patterns:
     - include: "#custom_commands"
     - include: "#command_context"
   argument:
     name: meta.argument.shell
     begin: "\\s++(?!(?:!|%|&|\\||\\(|\\{|\\[|<|>|#|\\n|$|;))"
-    end: "(?=\\s|;|\\||&|$|\\n|\\)|\\`)"
+    end: "(?=\\s|;|\\||&|$|\\n|\\)|`)"
     patterns:
     - include: "#command_context"
     - match: '[^ \|&;<>\(\)\$`\\"'']+'
@@ -911,11 +919,11 @@ repository:
         name: string.unquoted.argument.shell constant.other.option.dash.shell
       '2':
         name: string.unquoted.argument.shell constant.other.option.shell
-    end: "(?:(?=\\s)|(?=;|\\||&|$|\\n|\\)|\\`|\\}|\\{|#|\\])(?<!\\\\))"
+    end: "(?:(?=\\s)|(?=;|\\||&|$|\\n|\\)|`|\\}|\\{|#|\\])(?<!\\\\))"
     patterns:
     - include: "#option_context"
   simple_options:
-    match: "(?:\\s++(\\-)(\\w+))*"
+    match: "(?:\\s++(-)(\\w+))*"
     captures:
       '1':
         name: string.unquoted.argument.shell constant.other.option.dash.shell
@@ -923,15 +931,15 @@ repository:
         name: string.unquoted.argument.shell constant.other.option.shell
   command_call:
     name: meta.statement.shell
-    begin: "(?<=(?:^|;|\\||&|!|\\(|\\{|\\`|if|elsif|then|while|until|do))\\s*+(?!function\\W|function\\$|export\\W|export\\$|select\\W|select\\$|case\\W|case\\$|do\\W|do\\$|done\\W|done\\$|elif\\W|elif\\$|else\\W|else\\$|esac\\W|esac\\$|fi\\W|fi\\$|for\\W|for\\$|if\\W|if\\$|in\\W|in\\$|then\\W|then\\$|until\\W|until\\$|while\\W|while\\$)"
-    end: "(?=;|\\||&|$|\\n|\\)|\\`|\\}|\\{|#|\\])(?<!\\\\)"
+    begin: "(?<=(?:^|;|\\||&|!|\\(|\\{|`|if|elif|then|while|until|do))\\s*+(?!function\\W|function\\$|export\\W|export\\$|select\\W|select\\$|case\\W|case\\$|do\\W|do\\$|done\\W|done\\$|elif\\W|elif\\$|else\\W|else\\$|esac\\W|esac\\$|fi\\W|fi\\$|for\\W|for\\$|if\\W|if\\$|in\\W|in\\$|then\\W|then\\$|until\\W|until\\$|while\\W|while\\$)"
+    end: "(?=;|\\||&|$|\\n|\\)|`|\\}|\\{|#|\\])(?<!\\\\)"
     patterns:
     - include: "#option"
     - include: "#argument"
     - include: "#command_name"
     - include: "#command_context"
   sed_command:
-    match: (\bsed\b)(?:\s++(\-)(\w+))*\s+(['"]s\/)(.*)(\/)(.*)(\/\w{0,4}['"])(.*)
+    match: (\bsed\b)(?:\s++(-)(\w+))*\s+(['"]s\/)(.*)(\/)(.*)(\/\w{0,4}['"])(.*)
     captures:
       '1':
         name: entity.name.command.shell
@@ -995,7 +1003,7 @@ repository:
     - include: "#regex_comparison"
     - include: "#logical_expression_context"
   regex_comparison:
-    match: "(\\=~)\\s+([^ ]*)"
+    match: "(=~)\\s+([^ ]*)"
     captures:
       '1':
         name: keyword.operator.logical.shell
@@ -1044,7 +1052,7 @@ repository:
         name: keyword.operator.expansion.shell
       - include: "#variable"
       - include: "#string"
-      - match: "((?:^|\\b)[a-zA-Z_]\\w*+(?:\\b|$))(\\[)(?:([@*])|([^\\]]+))(\\])"
+      - match: "()(\\[)(?:([@*])|([^\\]]+))(\\])"
         captures:
           '1':
             name: variable.other.array.shell
@@ -1066,38 +1074,35 @@ repository:
           name: variable.other.normal.shell
   regexp:
     patterns:
-    - name: keyword.control.anchor.regexp.shell
-      match: "\\\\[bB]|\\^|\\$"
+    - match: "\\\\[bB]|\\^|\\$"
+      name: keyword.control.anchor.regexp.shell
     - match: "\\\\[1-9]\\d*|\\\\k<([a-zA-Z_$][\\w$]*)>"
-      captures:
-        '0':
-          name: keyword.other.back-reference.regexp.shell
-        '1':
-          name: variable.other.regexp.shell
-    - name: keyword.operator.quantifier.regexp.shell
-      match: "[?+*]|\\{(\\d+,\\d+|\\d+,|,\\d+|\\d+)\\}\\??"
-    - name: keyword.operator.or.regexp.shell
-      match: "\\|"
+      name: keyword.other.back-reference.regexp.shell variable.other.regexp.shell
+    - match: "[?+*]|\\{(\\d+,\\d+|\\d+,|,\\d+|\\d+)\\}\\??"
+      name: keyword.operator.quantifier.regexp.shell
+    - match: "\\\\|"
+      name: keyword.operator.or.regexp.shell
     - name: meta.group.assertion.regexp.shell
-      begin: "(\\()((\\?=)|(\\?!)|(\\?<=)|(\\?<!))"
+      begin: "(\\()"
       beginCaptures:
         '1':
           name: punctuation.definition.group.regexp.shell
-        '2':
-          name: punctuation.definition.group.assertion.regexp.shell
-        '3':
-          name: meta.assertion.look-ahead.regexp.shell
-        '4':
-          name: meta.assertion.negative-look-ahead.regexp.shell
-        '5':
-          name: meta.assertion.look-behind.regexp.shell
-        '6':
-          name: meta.assertion.negative-look-behind.regexp.shell
       end: "(\\))"
       endCaptures:
         '1':
           name: punctuation.definition.group.regexp.shell
       patterns:
+      - match: "(?:(?:(?:(\\?=)|(\\?!))|(\\?<=))|(\\?<!))"
+        captures:
+          '1':
+            name: meta.assertion.look-ahead.regexp.shell
+          '2':
+            name: meta.assertion.negative-look-ahead.regexp.shell
+          '3':
+            name: meta.assertion.look-behind.regexp.shell
+          '4':
+            name: meta.assertion.negative-look-behind.regexp.shell
+        name: punctuation.definition.group.assertion.regexp.shell
       - include: "#regexp"
     - name: meta.group.regexp.shell
       begin: "\\((?:(\\?:)|(?:\\?<([a-zA-Z_$][\\w$]*)>))?"

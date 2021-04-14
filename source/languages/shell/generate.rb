@@ -175,10 +175,10 @@ end
 # @type [Regexp]
 assign_op =
 	newPattern(
-		match: /\+\=/,
+		match: /\+=/,
 		tag_as: 'keyword.operator.assignment.compound'
 	).or(
-		match: /\=/,
+		match: /=/,
 		tag_as: 'keyword.operator.assignment'
 	)
 
@@ -269,10 +269,10 @@ grammar[:assignment] =
 # Commands
 #
 
-possible_pre_command_characters = /(?:^|;|\||&|!|\(|\{|\`|if|elif|then|while|until|do)/
+possible_pre_command_characters = /(?:^|;|\||&|!|\(|\{|`|if|elif|then|while|until|do)/
 possible_command_start          = lookAheadToAvoid(/(?:!|%|&|\||\(|\{|\[|<|>|#|\n|$|;)/)
-command_end                     = lookAheadFor(/;|\||&|$|\n|\)|\`|\}|\{|#|\]/).lookBehindToAvoid(/\\/)
-unquoted_string_end             = lookAheadFor(/\s|;|\||&|$|\n|\)|\`/)
+command_end                     = lookAheadFor(/;|\||&|$|\n|\)|`|\}|\{|#|\]/).lookBehindToAvoid(/\\/)
+unquoted_string_end             = lookAheadFor(/\s|;|\||&|$|\n|\)|`/)
 invalid_literals                = Regexp.quote(@tokens.representationsThat(:areInvalidLiterals).join(''))
 valid_literal_characters        = Regexp.new("[^\s#{invalid_literals}]+")
 
@@ -325,7 +325,7 @@ grammar[:option] = PatternRange.new(
 
 grammar[:simple_options] = zeroOrMoreOf(
 	whitespace.then(
-		match: /\-/,
+		match: /-/,
 		tag_as: 'string.unquoted.argument constant.other.option.dash'
 	).then(
 		match: /\w+/,
@@ -334,7 +334,7 @@ grammar[:simple_options] = zeroOrMoreOf(
 )
 
 keywords         = @tokens.representationsThat(:areNonCommands)
-keyword_patterns = /#{keywords.map { |keyword| keyword + '\W|' + keyword + '\$' } .join('|')}/
+keyword_patterns = /#{keywords.map { |keyword| keyword + '\W|' + keyword + '\$' }.join('|')}/
 
 grammar[:command_call] = PatternRange.new(
 	zeroLengthStart?: true,
@@ -351,9 +351,8 @@ grammar[:command_call] = PatternRange.new(
 
 grammar[:custom_commands] = [
 
-	# Note:
-	#   this sed does not cover all possible cases, it only covers the most likely case
-	#   in the event of a more complicated case, it falls back on tradidional command highlighting
+	# NOTE: This sed does not cover all possible cases, it only covers the most likely case
+	#       in the event of a more complicated case, it falls back on tradidional command highlighting
 	grammar[:sed_command] = Pattern.new(
 		Pattern.new(
 			match: /\bsed\b/,
@@ -478,7 +477,7 @@ grammar[:logical_expression_double] = PatternRange.new(
 
 grammar[:regex_comparison] = Pattern.new(
 	tag_as: 'keyword.operator.logical',
-	match: /\=~/,
+	match: /=~/,
 ).then(
 	@spaces
 ).then(
