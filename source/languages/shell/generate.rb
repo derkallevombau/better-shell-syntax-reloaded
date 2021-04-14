@@ -166,10 +166,10 @@ grammar[:statement_separator] = newPattern(
 
 # @param type [String]
 def generateAssignedVariable(type)
-	{
+	newPattern(
 		match: @variable_name,
 		tag_as: "variable.other.#{type} variable.other.assignment.#{type}",
-	}
+	)
 end
 
 # @type [Regexp]
@@ -205,61 +205,64 @@ array_subscript_contents_math =
 		includes: [:math]
 	}
 
-# Patterns from grammar[:statement_separator] without newline.
-# This is used within positive lookahead, and since this obviously
-# doesn't respect the order of subpatterns in an alternation,
-# it would match the newline, thus the greedy rvalue matching would
-# also match the statement separator, if any.
-assignment_end = ';|&&|\|\||&'
+# rvalue in assignment to array element or normal variable.
+normal_rvalue =
+	{
+		# Match everything but characters allowed after a statement,
+		# if any, possibly with preceding whitespace.
+		# ; is important to be recognised when you write e. g. 'foo="$1"; shift'.
+		# You will probably not use && or || after an assignment
+		# because it cannot fail, but this is a grammar, not a linter.
+		# N.B.: Obviously, it is crucial to match .* non-greedily for an alternation
+		# in the positive lookahead assertion to work.
+		match: /.*?(?=\s*(?:;|&|\||$))/,
+		tag_as: 'variable.other.assignment.rvalue',
+		includes: [:rvalue]
+	}
 
-grammar[:assignment] = newPattern(
-	tag_as: 'meta.expression.assignment',
-	match: whitespace_maybe.then(
-		newPattern(
-			# Assignment to array as a whole
-			newPattern(
-				**generateAssignedVariable('array')
-			).then(
-				assign_op
-			).then(
-				**generateArrayLiteralParen('(')
-			).then(
-				# Since we might have nested parentheses here,
-				# use positive lookahead to match everything but the last closing parenthesis.
-				match: /.*(?=\))/,
-				tag_as: 'variable.other.assignment.rvalue',
-				includes: [:rvalue]
-			).then(
-				**generateArrayLiteralParen(')')
-			)
-		).or(
-			newPattern(
-				newPattern(
-					# Assignment to array element
-					newPattern(**generateAssignedVariable('array')).then(
+grammar[:assignment] =
+	newPattern(
+		tag_as: 'meta.expression.assignment',
+		match: whitespace_maybe
+			.then(
+				newPattern( # Assignment to array as a whole
+					generateAssignedVariable('array')
+					.then(
+						assign_op
+					).then(
+						**generateArrayLiteralParen('(')
+					).then(
+						# Since we might have nested parentheses here,
+						# use positive lookahead to match everything but the last closing parenthesis.
+						match: /.*(?=\))/,
+						tag_as: 'variable.other.assignment.rvalue',
+						includes: [:rvalue]
+					).then(
+						**generateArrayLiteralParen(')')
+					)
+				).or( # Assignment to array element
+					generateAssignedVariable('array')
+					.then(
 						**generateArraySubscriptBracket('[')
 					).then(
 						**array_subscript_contents_math
 					).then(
 						**generateArraySubscriptBracket(']')
+					).then(
+						assign_op
+					).then(
+						**normal_rvalue
 					)
-				).or(
-					# Assignment to normal variable
-					**generateAssignedVariable('normal')
+				).or( # Assignment to normal variable
+					generateAssignedVariable('normal')
+					.then(
+						assign_op
+					).then(
+						**normal_rvalue
+					)
 				)
-			).then(
-				assign_op
-			).then(
-				# In principle, an rvalue is optional, but you would rather
-				# use unset to clear a variable. However, let's be correct.
-				# Match everything, if any, but the end pattern, if any.
-				match: /.*(?=\s+(?:#{assignment_end}))|.*(?=#{assignment_end})|.*/,
-				tag_as: 'variable.other.assignment.rvalue',
-				includes: [:rvalue]
 			)
-		)
 	)
-)
 
 #
 # Commands
