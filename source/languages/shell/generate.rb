@@ -173,13 +173,14 @@ def generateAssignedVariable(type)
 end
 
 # @type [Regexp]
-assign_op = newPattern(
-	match: /\+\=/,
-	tag_as: 'keyword.operator.assignment.compound'
-).or(
-	match: /\=/,
-	tag_as: 'keyword.operator.assignment'
-)
+assign_op =
+	newPattern(
+		match: /\+\=/,
+		tag_as: 'keyword.operator.assignment.compound'
+	).or(
+		match: /\=/,
+		tag_as: 'keyword.operator.assignment'
+	)
 
 # @param paren [String]
 def generateArrayLiteralParen(paren)
@@ -506,53 +507,55 @@ def generateVariable(regex_after_dollarsign, tag)
 end
 
 # @type [Regexp]
-array = newPattern(
-	match: $variable_name,
-	tag_as: 'variable.other.array'
-).then(
-	**generateArraySubscriptBracket('[')
-).then(
+array =
 	newPattern(
-		match: /[@*]/,
-		tag_as: 'keyword.other.subscript.all'
-	).or(
-		**array_subscript_contents_math
+		match: $variable_name,
+		tag_as: 'variable.other.array'
+	).then(
+		**generateArraySubscriptBracket('[')
+	).then(
+		newPattern(
+			match: /[@*]/,
+			tag_as: 'keyword.other.subscript.all'
+		).or(
+			**array_subscript_contents_math
+		)
+	).then(
+		**generateArraySubscriptBracket(']')
 	)
-).then(
-	**generateArraySubscriptBracket(']')
-)
 
-grammar[:variable] = [
-	generateVariable(/(?:[@*]|\{[@*]\})/, 'variable.parameter.positional.all'),
-	generateVariable(/(?:#|\{#\})/, 'variable.parameter.positional.number'),
-	generateVariable(/(?:[1-9]|\{[1-9][0-9]*\})/, 'variable.parameter.positional'),
-	generateVariable(/(?:[-?$!0_]|\{[-?$!0_]\})/, 'variable.language.special'),
-	# Parameter expansion
-	PatternRange.new(
-		start_pattern: newPattern(
-			match: /\$/,
-			tag_as: 'punctuation.definition.variable punctuation.section.bracket.curly.variable.begin'
-		).then(
-			match: /\{/,
-			tag_as: 'punctuation.section.bracket.curly.variable.begin',
+grammar[:variable] =
+	[
+		generateVariable(/(?:[@*]|\{[@*]\})/, 'variable.parameter.positional.all'),
+		generateVariable(/(?:#|\{#\})/, 'variable.parameter.positional.number'),
+		generateVariable(/(?:[1-9]|\{[1-9][0-9]*\})/, 'variable.parameter.positional'),
+		generateVariable(/(?:[-?$!0_]|\{[-?$!0_]\})/, 'variable.language.special'),
+		# Parameter expansion
+		PatternRange.new(
+			start_pattern: newPattern(
+				match: /\$/,
+				tag_as: 'punctuation.definition.variable punctuation.section.bracket.curly.variable.begin'
+			).then(
+				match: /\{/,
+				tag_as: 'punctuation.section.bracket.curly.variable.begin',
+			),
+			end_pattern: newPattern(
+				match: /\}/,
+				tag_as: 'punctuation.section.bracket.curly.variable.end',
+			),
+			includes: [
+				{
+					'match': "!|:[-=?]?|\\*|@|\#{1,2}|%{1,2}|\\^{1,2}|,{1,2}|/",
+					'name': 'keyword.operator.expansion.shell'
+				},
+				:variable,
+				:string,
+				array
+			]
 		),
-		end_pattern: newPattern(
-			match: /\}/,
-			tag_as: 'punctuation.section.bracket.curly.variable.end',
-		),
-		includes: [
-			{
-				'match': "!|:[-=?]?|\\*|@|\#{1,2}|%{1,2}|\\^{1,2}|,{1,2}|/",
-				'name': 'keyword.operator.expansion.shell'
-			},
-			:variable,
-			:string,
-			array
-		]
-	),
-	# normal variables
-	generateVariable(/\w+/, 'variable.other.normal')
-]
+		# normal variables
+		generateVariable(/\w+/, 'variable.other.normal')
+	]
 
 #
 # regex (legacy format, imported from JavaScript regex)
