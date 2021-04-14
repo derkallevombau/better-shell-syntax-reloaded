@@ -1,6 +1,5 @@
 # Merely needed for deep_clone ATM.
-require('rubygems')
-require('bundler/setup') # Ignore the warning, it works.
+require('bundler/setup')
 
 # All loaded files are available to each other.
 # E. g. Grammar needs Regexp and PatternRange,
