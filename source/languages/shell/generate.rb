@@ -3,8 +3,9 @@ require(PathFor[:repo_helper])
 require(PathFor[:textmate_tools])
 require(PathFor[:sharedPattern]['numeric'])
 require(PathFor[:sharedPattern]['line_continuation'])
-require_relative('tokens.rb')
+require_relative('tokens')
 require(PathFor[:logger_wrapper])
+
 #
 # Setup grammar
 #
