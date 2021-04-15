@@ -390,7 +390,7 @@ class Grammar
 		key = insertNamespaceIfNeeded(key)
 
 		# check for accidental overwrite
-		overwrite_allowed = overwrite_option&.values_at(:overwrite) == true
+		overwrite_allowed = overwrite_option.is_a?(Hash) && overwrite_option[:overwrite]
 
 		unless @data[:repository][key].nil? || overwrite_allowed
 			warning(
