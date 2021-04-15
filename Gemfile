@@ -23,11 +23,11 @@
 
 source('https://rubygems.org')
 
-group(:vscode_ext_deps_ruby, optional: true) do
-	gem('solargraph')            # Required by VS Code Extension 'castwide.solargraph'. Includes rubocop. See .vscode/extensions.json.
-	gem('rubocop-require_tools') # Plugin for rubocop, checks for missing requires.
-	gem('ruby-debug-ide')        # Required by VS Code Extension 'rebornix.ruby' for debugging Ruby scripts. See .vscode/extensions.json.
-	gem('debase')                # Required by ruby-debug-ide.
+group(:vscode_ext_deps_ruby) do
+	gem('debase', '~> 0.2.5.beta2') # Required by ruby-debug-ide.
+	gem('rubocop-require_tools')    # Plugin for rubocop, checks for missing requires.
+	gem('ruby-debug-ide')           # Required by VS Code Extension 'rebornix.ruby' for debugging Ruby scripts. See .vscode/extensions.json.
+	gem('solargraph')               # Required by VS Code Extension 'castwide.solargraph'. Includes rubocop. See .vscode/extensions.json.
 end
 
 gem('deep_clone')
