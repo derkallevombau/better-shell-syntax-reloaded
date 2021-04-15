@@ -1,0 +1,94 @@
+Pattern from "interpolation": { "patterns": [<first element>]} from original.tmlanguage.json:
+
+{
+	"begin": "\\$\\({2}",
+	"beginCaptures": {
+		"0": {
+			"name": "punctuation.definition.evaluation.arithmetic.begin.shell"
+		}
+	},
+	"end": "\\){2}",
+	"endCaptures": {
+		"0": {
+			"name": "punctuation.definition.evaluation.arithmetic.end.shell"
+		}
+	},
+	"name": "string.other.math.shell",
+	"patterns": [
+		{
+			"include": "#math"
+		}
+	]
+}
+
+PatternRange that will create the pattern above:
+
+PatternRange.new(
+	tag_as: 'string.other.math.shell',
+	start_pattern: newPattern(
+		match: /\$\({2}/,
+		tag_as: 'punctuation.definition.evaluation.arithmetic.begin.shell'
+	),
+	end_pattern: newPattern(
+		match: /\){2}/,
+		tag_as: 'punctuation.definition.evaluation.arithmetic.end.shell'
+	),
+	includes: [:math]
+)
+
+Resulting output in shell.tmLanguage.json:
+
+{
+	"name": "string.other.math.shell",
+	"begin": "(\\$\\({2})",
+	"beginCaptures": {
+		"1": {
+			"name": "punctuation.definition.evaluation.arithmetic.begin.shell"
+		}
+	},
+	"end": "(\\){2})",
+	"endCaptures": {
+		"1": {
+			"name": "punctuation.definition.evaluation.arithmetic.end.shell"
+		}
+	},
+	"patterns": [
+		{
+			"include": "#math"
+		}
+	]
+}
+
+This is a little different to the original pattern:
+- Location of "name": ... => Has no effect
+- No capture groups in original, thus "0" (whole match) in "beginCaptures" and "endCaptures",
+  "begin" and "end" patterns in capture groups in our output, thus "1" (first (and only) capture)
+  => Same effect
+
+So we have verified that the output generated from our PatternRange is equivalent to the original one
+and we can make our desired changes.
+
+Full code:
+
+grammar[:interpolation, overwrite: true] =
+	[
+		PatternRange.new(
+			tag_as: 'string.other.math.shell',
+			start_pattern: newPattern(
+				match: /\$\({2}/,
+				tag_as: 'punctuation.definition.evaluation.arithmetic.begin.shell'
+			),
+			end_pattern: newPattern(
+				match: /\){2}/,
+				tag_as: 'punctuation.definition.evaluation.arithmetic.end.shell'
+			),
+			includes: [:math]
+		),
+		*grammar[:interpolation]['patterns']
+	]
+
+grammar[:interpolation]['patterns'] gives the "patterns" array, but we don't want to insert the array,
+we want to insert its elements, so we use the splat operator to decompose the array.
+
+N.B.: It is not necessary to remove the pattern from original.tmlanguage.json when nothing is changed,
+but you use this code because you want to change someting.
