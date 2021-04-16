@@ -1,0 +1,8 @@
+{
+    "displayName": "Better Shell Syntax (fork from Jeff Hykin's Project)",
+    "version": "1.0.11",
+    "repository": {
+        "url": "https://github.com/derkallevombau/better-shell-syntax-fork",
+        "type": "git"
+    }
+}
