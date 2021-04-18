@@ -26,7 +26,7 @@ class TokenHelper
 	# Returns an array of tokens
 	# @param adjectives [Array<Symbol>]
 	def tokensThat(*adjectives)
-		matches = @tokens.select do |token|
+		@tokens.select do |token|
 			output = true
 
 			adjectives.each do |adjective|
@@ -40,8 +40,6 @@ class TokenHelper
 
 			output
 		end
-
-		matches
 	end
 
 	def representationsThat(*adjectives)
