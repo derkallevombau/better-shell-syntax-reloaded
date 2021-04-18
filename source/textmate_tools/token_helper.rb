@@ -49,17 +49,17 @@ class TokenHelper
 	def lookBehindToAvoidWordsThat(*adjectives)
 		array_of_invalid_names = representationsThat(*adjectives)
 
-		/\b/.lookBehindToAvoid(/#{array_of_invalid_names.map { |invalidName| '\W' + invalidName + '|^' + invalidName } .join('|')}/)
+		/\b/.lookBehindToAvoid(/#{array_of_invalid_names.map { |invalidName| '\W' + invalidName + '|^' + invalidName }.join('|')}/)
 	end
 
 	def lookAheadToAvoidWordsThat(*adjectives)
 		array_of_invalid_names = representationsThat(*adjectives)
 
-		/\b/.lookAheadToAvoid(/#{array_of_invalid_names.map { |invalidName| invalidName + '\W|' + invalidName + '\$' } .join('|')}/)
+		/\b/.lookAheadToAvoid(/#{array_of_invalid_names.map { |invalidName| invalidName + '\W|' + invalidName + '\$' }.join('|')}/)
 	end
 
 	def that(*adjectives)
-		/(?:#{tokensThat(*adjectives).map { |match| Regexp.escape(match[:representation]) } .join('|')})/
+		/(?:#{tokensThat(*adjectives).map { |match| Regexp.escape(match[:representation]) }.join('|')})/
 	end
 end
 
