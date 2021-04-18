@@ -6,7 +6,7 @@ class Symbol
 	def negated?() self[0] == '!' end
 
 	def !@
-		(negated? ? self[1..-1] : '!' + to_s).to_sym
+		(negated? ? self[1..] : '!' + to_s).to_sym
 	end
 end
 
