@@ -1,0 +1,49 @@
+{
+	"files": [
+		{
+			"path": "source/languages/shell/generate.rb",
+			"bookmarks": [
+				{
+					"line": 9,
+					"column": 7,
+					"label": ""
+				},
+				{
+					"line": 36,
+					"column": 5,
+					"label": ""
+				},
+				{
+					"line": 110,
+					"column": 7,
+					"label": ""
+				},
+				{
+					"line": 163,
+					"column": 9,
+					"label": ""
+				},
+				{
+					"line": 279,
+					"column": 7,
+					"label": ""
+				},
+				{
+					"line": 502,
+					"column": 6,
+					"label": ""
+				},
+				{
+					"line": 570,
+					"column": 4,
+					"label": "# regex"
+				},
+				{
+					"line": 719,
+					"column": 4,
+					"label": ""
+				}
+			]
+		}
+	]
+}
