@@ -210,7 +210,10 @@ array_subscript_contents_math =
 normal_rvalue =
 	newPattern(
 		# Quoted string: Not hard to find the end ;)
-		match: /".*"|'.*'/,
+		# Also take into account concatenations of alternating
+		# single- and double-quoted strings.
+		# Note: (?:".*"'.*')+(?:".*")? doesn't work.
+		match: /(?:".*"'.*')+".*"|(?:'.*'".*")+'.*'|(?:".*"'.*')+|(?:'.*'".*")+|".*"|'.*'/,
 		tag_as: 'variable.other.assignment.rvalue',
 		includes: [:string]
 	).or(
