@@ -84,7 +84,7 @@ class PatternRange
 		if '' =~ pattern && !key_arguments.delete(:zeroLengthStart?) && pattern.inspect != "/\G/"
 			warning("'#{/#{start_pattern_as_tag[:match]}/.inspect}'", 'matches the zero length string ("").',
 				'This means that the patternRange always matches.',
-				'You can disable this warning by settting :zeroLengthStart? to true.',
+				'You can disable this warning by setting :zeroLengthStart? to true.',
 				"The tag for this PatternRange is '#{@as_tag[:name]}")
 		end
 
