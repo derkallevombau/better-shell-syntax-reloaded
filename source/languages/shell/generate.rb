@@ -209,13 +209,8 @@ array_subscript_contents_math =
 # rvalue in assignment to array element or normal variable.
 normal_rvalue =
 	newPattern(
-		# Double-quoted string: Not hard to find the end ;)
-		match: /".*"/,
-		tag_as: 'variable.other.assignment.rvalue',
-		includes: [:string]
-	).or(
-		# Ditto
-		match: /'.*'/,
+		# Quoted string: Not hard to find the end ;)
+		match: /".*"|'.*'/,
 		tag_as: 'variable.other.assignment.rvalue',
 		includes: [:string]
 	).or(
