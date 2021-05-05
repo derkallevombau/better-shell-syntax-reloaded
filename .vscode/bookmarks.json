@@ -24,24 +24,19 @@
 					"label": ""
 				},
 				{
-					"line": 279,
+					"line": 284,
 					"column": 7,
 					"label": ""
 				},
 				{
-					"line": 502,
+					"line": 507,
 					"column": 6,
 					"label": ""
 				},
 				{
-					"line": 570,
+					"line": 575,
 					"column": 4,
 					"label": "# regex"
-				},
-				{
-					"line": 719,
-					"column": 4,
-					"label": ""
 				}
 			]
 		}
