@@ -249,7 +249,9 @@ grammar[:assignment] =
 					).then(
 						# Since we might have nested parentheses here,
 						# use positive lookahead to match everything but the last closing parenthesis.
-						match: /.*(?=\))/,
+						# Also take into account that there could be a comment containing parens
+						# after the last closing paren belonging to the rvalue.
+						match: /.*(?=\)\s*#)|.*(?=\))/,
 						tag_as: 'variable.other.assignment.rvalue',
 						includes: [:rvalue]
 					).then(
