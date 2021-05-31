@@ -217,7 +217,7 @@ normal_rvalue =
 		# Also take into account concatenations of alternating
 		# single- and double-quoted strings.
 		# Note: (?:".*"'.*')+(?:".*")? doesn't work.
-		match: /(?:".*"'.*')+".*"|(?:'.*'".*")+'.*'|(?:".*"'.*')+|(?:'.*'".*")+|".*"|'.*'/,
+		match: /(?:".*?"'.*?')+?".*?"|(?:'.*?'".*?")+?'.*?'|(?:".*?"'.*?')+?|(?:'.*?'".*?")+?|".*?"|'.*?'/,
 		tag_as: 'variable.other.assignment.rvalue',
 		includes: [:string]
 	).then(
