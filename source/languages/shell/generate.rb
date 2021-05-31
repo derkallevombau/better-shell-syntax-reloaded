@@ -209,6 +209,10 @@ array_subscript_contents_math =
 # rvalue in assignment to array element or normal variable.
 normal_rvalue =
 	newPattern(
+		match: /[^"']*/,
+		tag_as: 'variable.other.assignment.rvalue',
+		includes: [:rvalue]
+	).maybe(
 		# Quoted string: Not hard to find the end ;)
 		# Also take into account concatenations of alternating
 		# single- and double-quoted strings.
@@ -216,8 +220,8 @@ normal_rvalue =
 		match: /(?:".*"'.*')+".*"|(?:'.*'".*")+'.*'|(?:".*"'.*')+|(?:'.*'".*")+|".*"|'.*'/,
 		tag_as: 'variable.other.assignment.rvalue',
 		includes: [:string]
-	).or(
-		# Unquoted string:
+	).then(
+		# Unquoted string (solo or at end of rvalue):
 		# Match everything but characters allowed after a statement,
 		# if any, possibly with preceding whitespace.
 		# '#' is important to be recognised if you have a comment after the assignment,
@@ -233,7 +237,7 @@ normal_rvalue =
 		#         or commands anyway.
 		match: /.*?(?=\s*(?:#|;|&|\||$))/,
 		tag_as: 'variable.other.assignment.rvalue',
-		includes: [:$initial_context]
+		includes: [:rvalue]
 	)
 
 grammar[:assignment] =
