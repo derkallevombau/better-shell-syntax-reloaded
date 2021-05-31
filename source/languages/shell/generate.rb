@@ -222,8 +222,9 @@ normal_rvalue =
 		# if any, possibly with preceding whitespace.
 		# '#' is important to be recognised if you have a comment after the assignment,
 		# ';' is important to be recognised when you write e. g. 'foo="$1"; shift'.
-		# You will probably not use && or || after an assignment
-		# because it cannot fail, but this is a grammar, not a linter.
+		# '&&' and '||' are important if you use a construct like '[[ $foo ]] && bar=$(some-command "$foo") || bar="$baz"'
+		# You will probably not use & or | after an assignment, but it would be grammatically correct
+		# since an assignment is a command.
 		# N.B.: - Obviously, it is crucial to match .* non-greedily for an alternation
 		#         in the positive lookahead assertion to work.
 		#       - Don't use any of the chars in the non-capture group within an unquoted string
