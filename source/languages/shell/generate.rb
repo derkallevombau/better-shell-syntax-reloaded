@@ -209,33 +209,25 @@ array_subscript_contents_math =
 # rvalue in assignment to array element or normal variable.
 normal_rvalue =
 	newPattern(
-		match: /[^"']*/,
-		tag_as: 'variable.other.assignment.rvalue',
-		includes: [:rvalue]
-	).maybe(
-		# Quoted string: Not hard to find the end ;)
-		# Also take into account concatenations of alternating
-		# single- and double-quoted strings.
-		# Note: (?:".*"'.*')+(?:".*")? doesn't work.
-		match: /(?:".*?"'.*?')+?".*?"|(?:'.*?'".*?")+?'.*?'|(?:".*?"'.*?')+?|(?:'.*?'".*?")+?|".*?"|'.*?'/,
-		tag_as: 'variable.other.assignment.rvalue',
-		includes: [:string]
-	).then(
-		# Unquoted string (solo or at end of rvalue):
+		# Unquoted, single-quoted, double-quoted or any mixture.
 		# Match everything but characters allowed after a statement,
 		# if any, possibly with preceding whitespace.
 		# '#' is important to be recognised if you have a comment after the assignment,
 		# ';' is important to be recognised when you write e. g. 'foo="$1"; shift'.
 		# '&&' and '||' are important if you use a construct like '[[ $foo ]] && bar=$(some-command "$foo") || bar="$baz"'
-		# You will probably not use & or | after an assignment, but it would be grammatically correct
+		# You will probably not use & or | after an assignment, but it would be grammatically correct.
 		# since an assignment is a command.
-		# N.B.: - Obviously, it is crucial to match .* non-greedily for an alternation
-		#         in the positive lookahead assertion to work.
+		# N.B.: - First, we try to match something that ends with a quoted string, possibly followed by an unquoted one.
+		#         We must match greedily for the positive lookahead to start after the last closing quote to prevent it
+		#         from matching any of the chars in the non-capture group inside a quoted string.
+		#         This way, we don't need to define dedicated patterns for quoted strings.
+		#       - If the first expression doesn't match, we match everything that does NOT end with a quote.
+		#       - Obviously, it is crucial to match .* immediately before the positive lookahead assertion non-greedily
+		#         for the alternation inside to work.
 		#       - Don't use any of the chars in the non-capture group within an unquoted string
 		#         since this would cause the rvalue to end before such a char because of the non-greedy matching.
-		#         However, in most cases you would use quotes for a string containing a regex
-		#         or commands anyway.
-		match: /.*?(?=\s*(?:#|;|&|\||$))/,
+		#         However, in most cases you would use quotes for a string containing a regex or commands anyway.
+		match: /.*["'].*?(?=\s*(?:#|;|&|\||$))|.*?(?=\s*(?:#|;|&|\||$))/,
 		tag_as: 'variable.other.assignment.rvalue',
 		includes: [:rvalue]
 	)
