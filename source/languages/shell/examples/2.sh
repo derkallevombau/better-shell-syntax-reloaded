@@ -3,6 +3,8 @@
 # Author: Christoph Marz
 # Created 2020-02-14 20:55:51, last modified 2020-02-14 21:17:05
 
+[[ $dateCmd && -z $logNOptLast ]] && output="$($dateCmd +'%Y-%m-%d %H:%M:%S') $msg" || output="$msg"
+
 exit 0
 
 foo=$(grep foo bar) && do-something-awesome-with "$foo"
